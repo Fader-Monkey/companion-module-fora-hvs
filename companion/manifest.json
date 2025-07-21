@@ -22,7 +22,7 @@
 		{
 			"name": "Matt Hammond",
 			"email": "matth@woosternaz.org"
-		}
+		},
 		{
 			"name": "Clark Rochon",
 			"email": "rochonclark@gmail.com"
@@ -34,3 +34,5 @@
 		"api": "nodejs-ipc",
 		"apiVersion": "0.0.0",
 		"entrypoint": "../index.js"
+	}
+}
