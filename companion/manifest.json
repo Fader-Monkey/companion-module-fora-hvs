@@ -10,7 +10,7 @@
 	"keywords": [
 		"Video"
 	],
-	"version": "0.0.0",
+	"version": "2.0.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-fora-hvs.git",
 	"bugs": "https://github.com/bitfocus/companion-module-fora-hvs/issues",
@@ -23,11 +23,14 @@
 			"name": "Matt Hammond",
 			"email": "matth@woosternaz.org"
 		}
+		{
+			"name": "Clark Rochon",
+			"email": "rochonclark@gmail.com"
+		}
 	],
+	"legacyIds": [],
 	"runtime": {
 		"type": "node22",
 		"api": "nodejs-ipc",
 		"apiVersion": "0.0.0",
 		"entrypoint": "../index.js"
-	}
-}
