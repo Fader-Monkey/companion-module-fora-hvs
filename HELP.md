@@ -22,7 +22,9 @@ This module has been tested on the following switcher models. If you would like 
   - Recall/playback macros by id #
   - Reboot the switcher
   - Send the switcher a custom command (**Note**: If you send something the switcher doesnt understand, it may drop the connection.)
+    - **Variables**
   - Variables for _Key On Air_ and _Last Recalled Event_
+  - Tally (PVW / PGM / Clear)
 - HVS 100/110 Only
   - Recall events by id #
 - HVS2000 Only
@@ -32,6 +34,5 @@ This module has been tested on the following switcher models. If you would like 
 
 - Pull source names from the switcher
 - Better disconnect detection
-- **Feedbacks**
-  - Tally (PVW / PGM / Clear)
+ - **Feedbacks**
   - Key status (ON AIR / CLEAR)

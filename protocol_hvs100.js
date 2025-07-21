@@ -43,6 +43,8 @@ module.exports = {
 			{ name: 'KEY 2 on/off', variableId: 'me_1_key_2' },
 			{ name: 'DSK 1 on/off', variableId: 'me_1_key_3' },
 			{ name: 'DSK 2 on/off', variableId: 'me_1_key_4' },
+			{ name: 'ME1 PGM', variableId: 'me_1_pgm_a' },
+			{ name: 'ME1 PRV', variableId: 'me_1_prv_b' },
 		],
 		MES: [{ id: 1, label: 'ME 1' }],
 		KEYS: [

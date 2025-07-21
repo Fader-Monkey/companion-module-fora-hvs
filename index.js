@@ -64,6 +64,7 @@ class forAinstance extends InstanceBase {
 		this.updateVariables()
 		this.updateActions()
 		await this.configUpdated(config)
+		this.subscribeFeedbacks()
 	}
 	
 	/**
@@ -179,26 +180,28 @@ class forAinstance extends InstanceBase {
 		})
 	}
 	
-	messageReceivedFromWebSocket(msg) {
-		//if (this.config.debug_messages) {
-		//}
-		const message = msg.toString('utf8');
-		this.log('info', "Received: " + message)
+	messageReceivedFromWebSocket(data, isBinary) {
+		if (isBinary) {
+			// This is binary data (likely an image for a still store).
+			// We can't process it as a command, so we'll log for debugging and ignore it.
+			this.log('debug', `Received binary message of length ${data.length}, ignoring.`);
+			return;
+		}
+
+		const message = data.toString('utf8');
+		// The switcher can send multiple responses at once, separated by a comma.
 		message
 			.split(',')
 			.map((item) => item.trim())
 			.forEach((item) => {
-				//this.log('warn','Data recieved: ' + item)
-				if (item.match('^[A-Za-z0-9_:]*$') !== null) {
-					let result = this.parseVariable(item)
-					if (result !== null) {
-						this.setVariableValues({[result[0]]: result[1]})
-					}
+				this.log('debug', 'Received: ' + item)
+				let result = this.parseVariable(item);
+				if (result !== null) {
+					this.setVariableValues({ [result[0]]: result[1] });
 				} else {
-					this.dataRecieved(item)
+					this.dataRecieved(item);
 				}
-			})
-		return
+			});
 	}
 }
 

@@ -191,6 +191,15 @@ module.exports = {
 				this.reconnect()
 			},
 		}
+		actions.get_state = {
+			name: 'Refresh Switcher State',
+			tooltip: 'Request a full state update from the switcher to refresh variables.',
+			options: [],
+			callback: async (event) => {
+				this.log('info', 'Requesting switcher state refresh.')
+				this.buildCommand('get_state', null)
+			},
+		}
 		actions.trans_me = {
 			name: 'Transition ME',
 			options: [
@@ -407,7 +416,7 @@ module.exports = {
 	 * Process data recieved from the switcher
 	 * @param {string} data - The data that was recieved
 	 */
-	dataRecieved: (data) => {
+	dataRecieved(data) {
 		// TODO: Process this data to populate feedbacks
 	},
 
@@ -415,7 +424,7 @@ module.exports = {
 	 * Process data recieved from the switcher to update variables
 	 * @param {string} data - The data that was recieved
 	 */
-	parseVariable: (data) => {
+	parseVariable(data) {
 		let [key, value] = data.split(':')
 		let aux
 		// HVS100 Events
@@ -435,12 +444,13 @@ module.exports = {
 			key = `me_${aux[1]}_key_${aux[2]}`
 			value = value === '0' ? 'off' : 'on'
 		}
-		// HVS100, HVS390 & HVS2000 ME Keys
+		// HVS100, & HVS390  ME Keys
 		// TODO: Determine difference between M1K1_KEYONAIR and ME_XPT_ME1_KEY1_XPT_PGM_OUT
 		else if ((aux = key.match('^ME_XPT_ME([1-3])_KEY([1-4])_XPT_PGM_OUT$')) !== null) {
 			key = `me_${aux[1]}_key_${aux[2]}`
 			value = value === '0' ? 'off' : 'on'
 		}
+		
 		// HVS100, HVS390 & HVS2000 DVE ME_XPT_ME1_KEY2_DVE_LAMP (Startup Check)
 		else if ((aux = key.match('^ME_XPT_ME([1-3])_KEY([1-4])_DVE_LAMP$')) !== null) {
 			key = `me_${aux[1]}_key_${aux[2]}_dve`
@@ -455,12 +465,40 @@ module.exports = {
 		else if ((aux = key.match('^ME_XPT_ME([1-3])_BKGD_A$')) !== null) {
 			key = `me_${aux[1]}_pgm_a`
 		}
+		// HVS2000 PGM/PVW selection from SET command echo
+		else if ((aux = key.match(/^SET\.M([1-3])BG_XPT_(A|PGM|B|PST)$/)) !== null) {
+			const me = aux[1]
+			const layer = aux[2]
+			if (layer === 'A' || layer === 'PGM') {
+				this.log('debug', `HVS2000 PGM selection change detected from SET command. ME: ${me}, Source: ${value}. Raw: ${data}`)
+				key = `me_${me}_pgm_a`
+			} else {
+				// 'B' or 'PST'
+				this.log('debug', `HVS2000 PVW selection change detected from SET command. ME: ${me}, Source: ${value}. Raw: ${data}`);
+				key = `me_${me}_prv_b`;
+			}
+		} 
+		// HVS2000 ME Keys from SET command echo (Testing)
+		else if ((aux = key.match(/^SET\.M([1-3])K([1-4])_KEYONAIR$/)) !== null) {
+			key = `me_${aux[1]}_key_${aux[2]}`
+			value = value === '0' ? 'off' : 'on'
+		}
+		// HVS2000 PGM selection  SET.M1BG_XPT_A:2
+		//else if ((aux = key.match('^_M([1-3])BG_XPT_A$')) !== null) {
+		//	this.log('debug', `HVS2000 PGM selection change detected. ME: ${aux[1]}, Source: ${value}. Raw: ${data}`)
+		//	key = `me_${aux[1]}_pgm_a`
+		//}
 		// HVS100, HVS390 PRV selection
 		else if ((aux = key.match('^ME_XPT_ME([1-3])_BKGD_B$')) !== null) {
 			key = `me_${aux[1]}_prv_b`
 		}
 		// HVS2000 Flex Keys
 		else if ((aux = key.match('^FLX([1-4])_KEYONAIR$')) !== null) {
+			key = `flex_key_${aux[1]}`
+			value = value === '0' ? 'off' : 'on'
+		}
+		// HVS2000 Flex Keys from SET command echo
+		else if ((aux = key.match(/^SET\.FLX([1-4])_KEYONAIR$/)) !== null) {
 			key = `flex_key_${aux[1]}`
 			value = value === '0' ? 'off' : 'on'
 		} else {
@@ -474,7 +512,7 @@ module.exports = {
 	 * Get the list of possible variables
 	 * @param {string} model - The model we are requesting variables for
 	 */
-	getVariableList: (model) => {
+	getVariableList(model) {
 		return protocol[model].VARIABLES
 	},
 
