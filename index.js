@@ -6,6 +6,8 @@
 const { InstanceBase, InstanceStatus, runEntrypoint, Regex } = require('@companion-module/base')
 let WebSocket = require('ws')
 let actions = require('./actions')
+let presets = require('./presets')
+let feedbacks = require('./feedbacks')
 let upgradeScripts = require('./upgrades')
 
 /**
@@ -26,6 +28,8 @@ class forAinstance extends InstanceBase {
 		// Assign the methods from the listed files to this class
 		Object.assign(this, {
 				...actions,
+				...presets,
+				...feedbacks,
 				...upgradeScripts
 			})
 			
@@ -62,7 +66,6 @@ class forAinstance extends InstanceBase {
 		this.initWebSocket()
 		this.isInitialized = true
 		this.updateVariables()
-		this.updateActions()
 		await this.configUpdated(config)
 		this.subscribeFeedbacks()
 	}
@@ -111,6 +114,8 @@ class forAinstance extends InstanceBase {
 		let oldConfig = this.config
 		this.config = config
 		this.updateActions()
+		this.updateFeedbacks()
+		this.updatePresets()
 
 		// If the ip or model changed, reinitalize the module
 		if (config.host !== oldConfig.host || config.model !== oldConfig.model) {
@@ -197,7 +202,11 @@ class forAinstance extends InstanceBase {
 				this.log('debug', 'Received: ' + item)
 				let result = this.parseVariable(item);
 				if (result !== null) {
+					// Update internal state
+					this.STATE[result[0]] = result[1]
+					// Update companion variables
 					this.setVariableValues({ [result[0]]: result[1] });
+					this.checkFeedbacks('pgm_source', 'pvw_source')
 				} else {
 					this.dataRecieved(item);
 				}
